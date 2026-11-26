@@ -1,0 +1,33 @@
+# Fetch 只允许白名单域名；黑名单通过 -site: 在搜索时排除。
+fetch_allow:
+  - cninfo.com.cn
+  - sse.com.cn
+  - szse.cn
+  - bse.cn
+  - csrc.gov.cn
+  - gov.cn
+  - stcn.com
+  - cs.com.cn
+  - cnstock.com
+  - eastmoney.com
+  - yicai.com
+  - caixin.com
+  - 21jingji.com
+  - jiemian.com
+  - wallstreetcn.com
+  - cls.cn
+  - nbd.com.cn
+  - xinhuanet.com
+  - people.com.cn
+  - thepaper.cn
+  - caijing.com.cn
+  - stockstar.com
+block:
+  - guba.eastmoney.com
+  - xueqiu.com
+  - tieba.baidu.com
+  - baijiahao.baidu.com
+  - zhihu.com
+  - weibo.com
+  - toutiao.com
+  - douyin.com

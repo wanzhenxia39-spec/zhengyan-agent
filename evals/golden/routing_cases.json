@@ -1,0 +1,29 @@
+{
+  "_说明": "路由判别器金标：标签由人工按'赌注与不确定性'标注，用于准确率与温度校准。",
+  "cases": [
+    {"question": "什么是市盈率TTM？", "label": "quick", "intent": "explain"},
+    {"question": "扣非净利润和归母净利润有什么区别", "label": "quick", "intent": "explain"},
+    {"question": "合同负债是什么意思", "label": "quick", "intent": "explain"},
+    {"question": "600519 最新收盘价是多少", "label": "quick"},
+    {"question": "宁德时代 300750 最近一次公告是什么", "label": "quick"},
+    {"question": "贵州茅台 600519 上半年营收是多少", "label": "quick"},
+    {"question": "比亚迪 002594 的总股本是多少", "label": "quick"},
+    {"question": "招商银行 600036 最新的市净率大概多少", "label": "quick"},
+    {"question": "复核贵州茅台 600519 最新一期半年报业绩", "label": "standard"},
+    {"question": "分析宁德时代 300750 最新一期利润质量", "label": "standard"},
+    {"question": "美的集团 000333 半年报的收入和利润同口径变化", "label": "standard"},
+    {"question": "比亚迪 002594 二季度单季业绩怎么样", "label": "standard"},
+    {"question": "五粮液 000858 经营现金流和净利润匹配吗", "label": "standard"},
+    {"question": "恒瑞医药 600276 最近一期研发投入和利润变化", "label": "standard"},
+    {"question": "海天味业 603288 最新业绩复盘", "label": "standard"},
+    {"question": "隆基绿能 601012 最新季度亏损收窄了吗", "label": "standard"},
+    {"question": "贵州茅台 600519 当前估值是否已经反映了业绩下滑风险？多空分歧在哪里", "label": "deep"},
+    {"question": "宁德时代 300750 在价格战下利润率能否守住，看多和看空的理由分别是什么", "label": "deep"},
+    {"question": "某公司被做空机构发布报告质疑财务造假，影响有多大，该怎么看 600519", "label": "deep"},
+    {"question": "比亚迪 002594 估值是否合理，持有逻辑是否还成立", "label": "deep"},
+    {"question": "隆基绿能 601012 行业产能过剩下是否已经见底，有哪些反证", "label": "deep"},
+    {"question": "招商银行 600036 地产风险敞口会不会显著侵蚀利润，悲观情景下怎样", "label": "deep"},
+    {"question": "恒瑞医药 600276 集采和创新药出海哪个影响更大，结论分歧在哪", "label": "deep"},
+    {"question": "五粮液 000858 渠道库存高企与业绩增长并存，可信度如何", "label": "deep"}
+  ]
+}

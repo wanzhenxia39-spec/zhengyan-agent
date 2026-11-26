@@ -1,0 +1,23 @@
+{
+  "_说明": "确定性计算金标。金额单位：元。每次修改计算 Skill 必须 100% 通过。",
+  "growth": [
+    {"id": "cum_yoy", "current": ["OPERATE_INCOME", "91000000000", "2026-06-30", "cumulative"], "prior": ["OPERATE_INCOME", "90000000000", "2025-06-30", "cumulative"], "expected": "1.11"},
+    {"id": "sq_yoy_negative", "current": ["OPERATE_INCOME", "37000000000", "2026-06-30", "single_quarter"], "prior": ["OPERATE_INCOME", "40000000000", "2025-06-30", "single_quarter"], "expected": "-7.50"},
+    {"id": "negative_base", "current": ["PARENT_NETPROFIT", "-50", "2026-12-31", "cumulative"], "prior": ["PARENT_NETPROFIT", "-100", "2025-12-31", "cumulative"], "expected": "50.00"},
+    {"id": "mismatch_basis", "current": ["OPERATE_INCOME", "91000000000", "2026-06-30", "cumulative"], "prior": ["OPERATE_INCOME", "40000000000", "2025-06-30", "single_quarter"], "error": true},
+    {"id": "mismatch_field", "current": ["OPERATE_INCOME", "91000000000", "2026-06-30", "cumulative"], "prior": ["TOTAL_OPERATE_INCOME", "92000000000", "2025-06-30", "cumulative"], "error": true},
+    {"id": "mismatch_period", "current": ["OPERATE_INCOME", "130000000000", "2026-09-30", "cumulative"], "prior": ["OPERATE_INCOME", "40000000000", "2025-03-31", "cumulative"], "error": true},
+    {"id": "zero_base", "current": ["OPERATE_INCOME", "1", "2026-06-30", "cumulative"], "prior": ["OPERATE_INCOME", "0", "2025-06-30", "cumulative"], "error": true}
+  ],
+  "single_quarter": [
+    {"id": "q2", "cumulative": ["OPERATE_INCOME", "91000000000", "2026-06-30"], "previous": ["OPERATE_INCOME", "54000000000", "2026-03-31"], "expected": "37000000000"},
+    {"id": "q1_is_cumulative", "cumulative": ["OPERATE_INCOME", "54000000000", "2026-03-31"], "previous": null, "expected": "54000000000"},
+    {"id": "q4", "cumulative": ["OPERATE_INCOME", "168000000000", "2025-12-31"], "previous": ["OPERATE_INCOME", "128000000000", "2025-09-30"], "expected": "40000000000"},
+    {"id": "missing_previous", "cumulative": ["OPERATE_INCOME", "91000000000", "2026-06-30"], "previous": null, "error": true},
+    {"id": "cross_year_previous", "cumulative": ["OPERATE_INCOME", "54000000000", "2026-06-30"], "previous": ["OPERATE_INCOME", "128000000000", "2025-03-31"], "error": true}
+  ],
+  "ratio": [
+    {"id": "net_margin", "numerator": ["PARENT_NETPROFIT", "44500000000", "2026-06-30"], "denominator": ["OPERATE_INCOME", "91000000000", "2026-06-30"], "expected": "48.90"},
+    {"id": "period_mismatch", "numerator": ["PARENT_NETPROFIT", "44500000000", "2026-06-30"], "denominator": ["OPERATE_INCOME", "90000000000", "2025-06-30"], "error": true}
+  ]
+}

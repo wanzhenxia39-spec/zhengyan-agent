@@ -1,0 +1,99 @@
+# Harness 策略：权限白名单、预算、审批门、出域规则。模型不能修改本文件。
+routes:
+  quick:
+    llm_role: draft
+    allowed_skills: [financials.statements, market.daily, valuation.snapshot, announcements.list, web.search, compute.*]
+    budget: {tokens: 80000, search_calls: 3, fetch_calls: 0, wall_clock_s: 300}
+    max_iterations: 0
+  standard:
+    llm_role: reason
+    allowed_skills: [financials.statements, market.daily, valuation.snapshot, announcements.list, web.search, web.fetch, compute.*]
+    budget: {tokens: 300000, search_calls: 15, fetch_calls: 8, wall_clock_s: 900}
+    max_iterations: 1
+  deep:                # 争议深研：多专家并行取证 → 有限对抗 → 主席综合
+    llm_role: reason
+    allowed_skills: [financials.statements, market.daily, valuation.snapshot, announcements.list, web.search, web.fetch, compute.*]
+    budget: {tokens: 1200000, search_calls: 40, fetch_calls: 16, wall_clock_s: 1800}
+    max_iterations: 0
+  mcp:                 # 外部 Agent 通过 MCP 调用：只读
+    llm_role: draft
+    allowed_skills: [financials.statements, market.daily, valuation.snapshot, announcements.list, web.search, compute.*]
+    budget: {tokens: 0, search_calls: 5, fetch_calls: 0, wall_clock_s: 120}
+    max_iterations: 0
+
+# 双轴路由：任务轴（走多重的流程）与模型轴（每个角色用多强的模型）解耦
+routing:
+  # 判别器：llm = 只用大模型；small = 本地决策小模型（Kev，.env 的 DECISION_BASE_URL）优先，不可用时退回大模型；
+  # shadow = 大模型生效、小模型只记录。2026-11-15 零样本实测：Kev-0.8B 线上流程准确率 95.8%、深研召回 100%、p50 69ms
+  classifier: small
+  abstain_below: 0.55        # 判别器校准后最高概率低于此值 → 拒判，按保守方向升级
+  temperature: 0.75          # 校准温度：2026-10-19 路由校准拟合（ECE 最低），经负责人批准
+  escalate_on:               # 标准研究在质量门检查点升级到深研的条件
+    min_disputed: 2
+    min_dissents: 3
+  deep_threshold_stakes: high
+
+intake:
+  # 意图识别：small = 本地决策小模型（Kev）判意图 + 正则/已有档案识别代码，识别不到代码或小模型不可用时退回大模型；llm = 只用大模型
+  classifier: small
+  # 关注点：按关键词抽取（小模型不生成文字），没命中就留空，检索规划默认按"最新业绩"
+  focus_keywords: [利润质量, 现金流, 估值, 分红, 负债, 合同负债, 存货, 毛利率, 净利率, 净息差, 资产质量, 研发, 海外,
+                   同口径, 单季, 半年报, 三季报, 年报, 业绩, 营收, 收入, 利润, 风险, 减值, 回购, 增持, 减持, 公告]
+
+experts:
+  max_team: 5                # 不含反证官与主席
+  search_per_expert: 2
+  fetch_per_expert: 2
+  debate_rounds: 1
+  max_challenges: 8
+  # 模型轴：深研中每个角色的模型角色（classify/draft/reason）
+  roles:
+    planner: reason
+    fundamental: draft
+    industry: draft
+    valuation: reason
+    technical: draft
+    event: draft
+    risk: draft
+    red_team: reason
+    chair: reason
+
+# 审批门：auto / confirm / deny。一期没有行动类 Skill，统一禁止。
+approvals:
+  default: auto
+  ttl_s: 600               # 审批有效期；过期或参数/版本变化即失效
+  skills:
+    action.*: deny
+
+egress:
+  # 命中即禁止出域（搜索查询词）；发给模型的文本会先脱敏
+  sensitive_patterns:
+    - '\d{16,19}'                                   # 银行卡/账号
+    - '\d{17}[\dXx]'                                # 身份证
+    - '1[3-9]\d{9}'                                 # 手机号
+    - '(我|我的|本人|家里|家庭).{0,8}(持仓|仓位|账户|存款|负债|房贷|收入|工资|本金)'
+    - '(持仓|仓位|持有|买了|亏了|赚了|投了|本金|存款|负债|房贷|工资)[^，。,.；;]{0,8}?\d+(\.\d+)?\s*(万|千|元|股|手)'
+  trade_intent_patterns:
+    - '(帮我|替我|直接|马上).{0,4}(买入|卖出|下单|清仓|加仓|减仓)'
+    # 2026-11-15：祈使句里的下单动作，且句中没有疑问 / 第三方 / 概念线索（有这些线索说明是在提问，不是让系统下单）。
+    # 实测：原测试集 8/8、留出集 12/12 识别，路由金标 24 题与真实历史问题 22 条 0 误报（docs/小模型决策节点实施方案.md 第七节）
+    - '^(?!.*(吗|？|\?|是否|要不要|该不该|适合|能否|能不能|可不可以|怎么|怎样|什么|多少|如何|为什么|区别|意思|影响|评级|分析师|北向|机构|股东|高管|回购|增持|减持|如果|假如)).*(买入|买进|卖出|卖掉|卖了|清仓|平仓|抛掉|抛售|加仓|减仓|建仓|下单|下个单|挂单|买单|卖单|止损|(用|拿).{0,6}钱买|仓位.{0,4}(降|减|加|提|调)到)'
+
+# 三期：事件订阅。服务运行时按间隔自动扫描已订阅的股票；0 = 只手动扫描
+watch:
+  scan_interval_hours: 6
+  default_price_move_pct: 10
+
+# 四期：策略卡与前向模拟盘（只模拟，不交易）
+strategy:
+  initial_cash: 1000000
+  min_paper_days: 10           # 晋级门控：至少前向模拟这么多个交易日
+  regression_tolerance_pct: 2  # 晋级门禁：相对在用版本，同期收益不得落后超过此值
+
+search:
+  qps: 4
+  rerank_min: 1.5
+  authority_b_min: 3
+  lookback_days: 120
+  cache_ttl_hours: 24
+  max_fetch_per_round: 4

@@ -1,0 +1,7 @@
+# 「持续更新」评测的可选人工金标：由你本人判断后填写，系统不会自动生成。
+# 格式：提醒 id → {旧版本结论 id: 期望判定}，判定取值 retained / weakened / invalidated / unverifiable。
+# 提醒 id 和结论 id 在评测页「持续更新」结果里逐条列出。
+# 例：
+# A-xxxxxxxx:
+#   c4: weakened
+#   c7: weakened

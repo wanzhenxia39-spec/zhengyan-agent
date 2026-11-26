@@ -1,0 +1,11 @@
+# 代码只按"角色"取模型；型号只在这里出现，可替换。
+roles:
+  classify:            # System 1：路由、意图、是否升级等离散判断
+    model: deepseek-flash
+    effort: low
+  draft:               # 快生成：查询词、摘要、快查草稿
+    model: deepseek-flash
+    effort: low
+  reason:              # System 2：标准研究的综合与推理
+    model: deepseek-flash
+    effort: high

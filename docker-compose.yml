@@ -1,0 +1,65 @@
+# 一键启动（Windows / macOS / Linux 通用，需要 Docker Desktop 或 Docker Engine + Compose v2）：
+#   cp .env.example .env        # Windows PowerShell：Copy-Item .env.example .env
+#   docker compose up -d --build
+#   打开 http://localhost:8000
+#
+# 首次启动（数据卷为空）时，mongo 会自动导入 deploy/mongo-init 里的演示数据（档案、证据、RSI 账本、评测记录），
+# 不填 DEEPSEEK_API_KEY 也能浏览；要发起新研究需要填 Key。
+# 跑测试（不联网、不需要 Key）：docker compose --profile test run --rm test
+services:
+  mongo:
+    image: mongo:7
+    container_name: advisor-mongo
+    ports:
+      - "127.0.0.1:27017:27017"      # 只给本机开发用（宿主机直接跑 advisor 时连这里）
+    volumes:
+      - advisor-mongo-data:/data/db
+      - ./deploy/mongo-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      target: app
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    image: advisor-app:latest
+    container_name: advisor-app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MONGO_URI: mongodb://mongo:27017          # 容器内通过服务名访问 mongo，覆盖 .env 里的 localhost
+      # 本地 Kev 决策小模型跑在宿主机时（只支持 Apple Silicon + MLX），在 .env 里设
+      # DECISION_BASE_URL=http://host.docker.internal:8009；不设则意图/路由判别自动退回大模型
+    extra_hosts:
+      - "host.docker.internal:host-gateway"     # Linux 下也能访问宿主机
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./reports:/app/reports                  # 研究底稿落到宿主机
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      target: test
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    image: advisor-test:latest
+    environment:
+      DEEPSEEK_API_KEY: ""
+
+volumes:
+  advisor-mongo-data:

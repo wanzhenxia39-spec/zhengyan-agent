@@ -1,0 +1,16 @@
+.git
+.env
+.venv
+.pytest_cache
+.claude
+.DS_Store
+**/__pycache__
+**/*.pyc
+web/node_modules
+web/dist
+web/tsconfig.tsbuildinfo
+data
+reports
+deploy
+docs
+*.pdf
